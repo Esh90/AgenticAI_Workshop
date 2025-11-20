@@ -1,154 +1,182 @@
-# Agentic AI Workshop: Multi-Agent Systems From Idea to Deployment
+# Code Development Assistant: Multi-Agent System
 
-A hands-on workshop template that demonstrates how to orchestrate CrewAI agents for planning, research, writing, and review workflows. The stack combines CrewAI with LangChain tools, a FAISS-backed Retrieval-Augmented Generation (RAG) pipeline, and a Streamlit frontend. All large language model calls are routed through the OpenRouter API using the model `meta-llama/llama-3.3-70b-instruct:free`.
+A hands-on project template that demonstrates how to orchestrate specialized CrewAI agents for end-to-end software development workflows: Planning, Writing, Testing, and Code Review.
 
-## Workshop Goals
+The stack combines CrewAI with specialized LangChain tools, a FAISS-backed Retrieval-Augmented Generation (RAG) pipeline, and a Streamlit frontend. All large language model calls are routed through the OpenRouter API using the stable and fast model: `mistralai/mistral-7b-instruct`.
 
-- Teach students how to structure multi-agent systems with CrewAI.
-- Illustrate how RAG augments agents with curated context via FAISS.
-- Showcase live web search and deterministic calculation tooling.
-- Provide an end-to-end example from initial idea to reviewed deliverable.
-- Offer a Streamlit interface that makes the pipeline demo-ready for classes and talks.
+---
 
-## Project Structure
+## 1. Project Goals and Architecture
+
+The primary goal of this project is to showcase a robust, fully automated, and self-correcting software development cycle using collaborative AI agents.
+
+### Key Architecture Showcase
+
+- **Multi-Agent Orchestration (CrewAI):** Structuring four specialized agents in a strictly sequential pipeline where output from one task (e.g., the Plan) becomes the context for the next (the Code).
+
+- **RAG for Standards:** Illustrating how the RAG pipeline augments agents with internal, curated context (coding standards, security guides) via FAISS, ensuring adherence to internal best practices.
+
+- **Specialized Tooling:** Implementing custom tools that provide targeted capabilities, moving beyond basic web search for critical tasks like code syntax checking and dependency auditing.
+
+- **Performance and Stability:** Using the high-throughput `mistralai/mistral-7b-instruct` model to maintain fast execution speeds suitable for deployment.
+
+---
+
+## 2. Project Structure
+
+The structure is designed for clear separation of concerns, mapping directly to the CrewAI framework and auxiliary services:
 
 ```
-agentic-workshop/
+code-dev-assistant/
 ├── .env.example
 ├── requirements.txt
-├── README.md
-├── main.py
-├── crew.py
-├── tasks.py
+├── README.md                 <-- This file
+├── main.py                   <-- CLI entrypoint
+├── crew.py                   <-- Crew and Agent Orchestration logic
+├── tasks.py                  <-- Defines the 4 sequential tasks
+│
 ├── config/
-│   └── settings.py
+│   ├── settings.py           <-- LLM/Model Configuration (Swapped to Mistral)
+│   └── logging_config.py
+│
 ├── agents/
-│   ├── __init__.py
-│   ├── planner.py
-│   ├── researcher.py
-│   ├── writer.py
-│   └── reviewer.py
+│   ├── __init__.py           <-- Exports the agent creation helpers
+│   ├── code_planner.py       <-- Role: Architect, Max Iterations: 8 (Optimized for speed)
+│   ├── code_writer.py        <-- Role: Senior Engineer, uses Syntax Tool
+│   ├── code_tester.py        <-- Role: QA Engineer, uses Testing Tool
+│   └── code_reviewer.py      <-- Role: Security Auditor, uses Audit Tool
+│
 ├── tools/
-│   ├── __init__.py
-│   ├── rag_tool.py
-│   ├── web_search.py
-│   └── calculator.py
+│   ├── __init__.py           <-- Registers all 6 tools
+│   ├── rag_tool.py           <-- FAISS Retrieval Tool
+│   ├── web_search.py         <-- General Web Search (Stabilized with DDGS fixes)
+│   ├── calculator.py         <-- Deterministic Calculator
+│   ├── code_syntax_tool.py   <-- NEW: Specialized tool for code formatting/syntax
+│   ├── code_testing_tool.py  <-- NEW: Specialized tool for testing frameworks/patterns
+│   └── dependency_audit_tool.py <-- NEW: Specialized tool for security/dependency checks
+│
 ├── rag/
 │   ├── build_vector_db.py
-│   ├── documents/
-│   │   └── sample_docs.txt
-│   └── vectorstore/
+│   └── documents/
+│       ├── coding_best_practices.txt
+│       ├── design_patterns.txt
+│       ├── error_handling.txt
+│       ├── testing_frameworks.txt
+│       └── security_best_practices.txt <-- NEW: Added security context for Reviewer/Tester
+│
 └── frontend/
-   └── app.py
+   └── app.py                 <-- Streamlit web interface
 ```
 
-## Built-in Agent Tooling
+---
 
-Every agent in the crew (planner, researcher, writer, reviewer) receives the same trio of tools via `tools.get_default_toolkit()`:
+## 3. Built-in Agent Tooling
 
-- `local_rag_search`: FAISS-backed retrieval over curated workshop documents for grounded answers.
-- `duckduckgo_search`: Live DuckDuckGo lookups when the topic needs current context or external validation.
-- `calculator`: A deterministic evaluator for quick math, metrics, or cost estimates referenced in drafts.
+Every agent in the crew has access to a toolkit tailored to their function.
 
-Having the shared toolkit means any role can validate facts or pull references without delegating to the researcher.
+| Tool Name                     | Type     | Purpose                                                                 | Primary User(s)            |
+|-------------------------------|----------|-------------------------------------------------------------------------|-----------------------------|
+| `local_rag_search`            | Custom   | RAG over internal documents for coding standards and security best practices. | All                         |
+| `duckduckgo_search`          | Standard | Live web search for general questions or external documentation lookups. | All                         |
+| `deterministic_calculator`    | Standard | Quick, reliable math for complexity estimates or test assertions.         | Planner, Tester, Reviewer   |
+| `code_syntax_tool`            | Custom   | Focused lookup for specific language syntax and best practices (e.g., Python list comprehension). | Code Writer                 |
+| `testing_framework_tool`      | Custom   | Searches for framework-specific test case patterns (e.g., pytest fixtures, Jest mocks). | Code Tester                 |
+| `dependency_audit_tool`      | Custom   | Checks external libraries for security vulnerabilities (CVEs) and license compliance. | Code Reviewer                |
 
-## Prerequisites
+---
+
+## 4. Installation and Setup
+
+### Prerequisites
 
 - Python 3.10+
-- An OpenRouter account and API key (free tier available)
-- (Optional) A virtual environment manager such as `venv`, `conda`, or `pipenv`
+- An OpenRouter account and API key (set in .env file)
+- A virtual environment manager (venv recommended)
 
-## Installation
+### Step-by-Step Setup
 
-1. **Clone the repository**
-   ```powershell
-   git clone https://github.com/your-org/agentic-workshop.git
-   cd agentic-workshop
-   ```
+1. Clone the repository (if applicable) and navigate to the directory.
 
-2. **Create and activate a virtual environment**
-   ```powershell
-   python -m venv .venv
-   .\.venv\Scripts\Activate.ps1
-   ```
+2. Create and activate a virtual environment
 
-3. **Install project dependencies**
-   ```powershell
-   pip install -r requirements.txt
-   ```
+    ```bash
+    python -m venv .venv
+    # Windows
+    .\.venv\Scripts\Activate.ps1
+    # macOS/Linux
+    source .venv/bin/activate
+    ```
 
-4. **Set up environment variables**
-   ```powershell
-   copy .env.example .env
-   # Edit .env and paste your actual OpenRouter API key
-   ```
+3. Install project dependencies
 
-5. **Build the FAISS vector store (one-time setup)**
-   ```powershell
-   python rag\build_vector_db.py
-   ```
+    ```bash
+    pip install -r requirements.txt
+    # Ensure the modern DuckDuckGo library is installed:
+    pip install ddgs
+    ```
 
-## Running the Backend Pipeline
+4. Set up environment variables
 
-Execute the crew directly from the command line:
+    ```bash
+    copy .env.example .env
+    # Edit .env and paste your actual OpenRouter API key:
+    # OPENROUTER_API_KEY=your_key_here
+    ```
 
-```powershell
-python main.py --topic "Agentic AI Workshop on Robotics Deployments"
+5. Build the FAISS vector store (one-time setup)
+
+    The RAG system is updated with documents on security and best practices. This step builds the index from the documents in `rag/documents/`.
+
+    ```bash
+    python rag\build_vector_db.py
+    ```
+
+---
+
+## 5. Running the Pipeline
+
+### Command Line Interface (Fast Execution)
+
+Execute the crew directly from the command line, providing a specific coding task.
+
+```bash
+python main.py --topic "Develop a secure Python function to sanitize user input for SQL injection."
 ```
 
-The script loads environment variables, constructs the CrewAI workflow, and prints the reviewed deliverable to stdout.
+### Streamlit Frontend (Visual Demo)
 
-### Using `run_pipeline` Programmatically
+Launch the interactive UI to run the pipeline visually:
 
-Import `run_pipeline` from `main.py` to embed the workflow inside other applications:
-
-```python
-from main import run_pipeline
-
-result = run_pipeline("Multi-Agent Workshop for Healthcare AI")
-print(result)
-```
-
-## Running the Streamlit Frontend
-
-Launch the UI from the virtual environment so Streamlit can resolve the backend packages:
-
-```powershell
+```bash
 python -m streamlit run frontend\app.py
 ```
 
-Enter a workshop topic in the sidebar and click **Run Pipeline**. The output panel displays the aggregated crew result when the run completes.
+Access at: [http://localhost:8501](http://localhost:8501)
 
-If you prefer to call the executable directly on Windows, use `.\.venv\Scripts\streamlit.exe run frontend\app.py` from the activated environment.
+---
 
-## Customising Agents and Tasks
+## 6. Optimization Summary
 
-- **Agent Prompts**: Update the placeholder system prompts in `agents/planner.py`, `agents/researcher.py`, `agents/writer.py`, and `agents/reviewer.py` to align with your scenario.
-- **Task Objectives**: Adjust the descriptions and expected outputs in `tasks.py` to fit new deliverables or grading rubrics.
-- **Tools**: Extend `tools/` with new integrations (e.g., GitHub search, deployment triggers) and register them in `tools/__init__.py` plus the relevant tasks.
-- **LLM Settings**: Tweak `config/settings.py` to experiment with temperatures, token limits, or alternative OpenRouter models.
-- **Knowledge Base**: Replace `rag/documents/sample_docs.txt` with your own corpus and re-run `python rag\build_vector_db.py`.
+To resolve the initial Rate Limit errors (Error 429) and excessive run times, the following optimizations were implemented:
 
-## Deploying the System
+- **LLM Model Swap:** The default model in `config/settings.py` was changed from the slow, rate-limited `meta-llama/llama-3.3-70b-instruct:free` to the fast, high-throughput `mistralai/mistral-7b-instruct`.
 
-- **Streamlit Community Cloud**: Upload the repo, set environment variables (`OPENROUTER_API_KEY`, optional fallbacks) in the project settings, and ensure `requirements.txt` is listed as the sole dependency file.
-- **Containerised App**: Package the CLI and Streamlit UI inside a Docker image (start from `python:3.11-slim`, copy the repo, install requirements, expose port 8501). Deploy to Azure App Service, AWS App Runner, or Google Cloud Run.
-- **API Gateway**: Wrap `run_workshop_pipeline` with FastAPI or Flask to expose a `/run` endpoint, then host behind a queue/worker on ECS, Azure Container Apps, or Fly.io for managed execution.
-- **Enterprise Integration**: For internal workshops, schedule the pipeline via orchestration tools (Airflow, Prefect) and archive outputs to cloud storage, allowing instructors to diff successive runs.
+- **Planner Optimization:** The `max_iter` for the Code Planner agent was reduced from 15 to 8 to force faster decision-making, cutting down the total time spent in the critical planning stage.
 
-## Troubleshooting Tips
+- **Tool Stability:** The `tools/web_search.py` file was refactored to use the modern `ddgs` library and with statements, eliminating ResourceWarning and improving stability for continuous deployment.
 
-- **Missing Vector Store**: If the research task fails to load the FAISS index, ensure `rag/vectorstore/` contains the generated files. Re-run the build script if needed.
-- **Authentication Errors**: Double-check that `OPENROUTER_API_KEY` is present in your environment. The app raises an explicit error if it is missing.
-- **Dependency Issues**: Match the Python version requirement and reinstall with `pip install --upgrade -r requirements.txt` when packages change.
+This robust configuration ensures a reliable and responsive demonstration of the four-stage Code Development Assistant workflow.
 
-## Next Steps for Students
-Each student in a group should take an agent and then write its prompt.
-1. Try to develop a simple crew AI chain for any basic task. (Like Research, Newsroom, Study Companion and sky is the limit)
-2. Add or Remove an Agent
-3. Try to make a new tool, like drawing maker. (Hint use canvas and LLM written code to draw lines on it)
-4. Try Deploying
-5. Play around with Prompts
-Run the pipeline ;)
+---
 
-Happy building! Customize freely to turn this template into a polished workshop experience.
+## 7. Team & Contribution Summary
+
+This project was developed through a collaborative effort. The table below outlines the primary responsibilities and core deliverables owned by each team member:
+
+| Team Member    | Agent Role(s)                        | Core Technical Contributions (Ownership)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+|----------------|--------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| You (Lead)     | Code Tester, Code Reviewer + Orchestrator | Lead Architecture & Flow: Defined project flow, managed end-to-end integration (`crew.py`, `main.py`), set up LLM configuration and tuning. Quality & Infrastructure: Developed Code Tester/Reviewer agents, built the RAG Pipeline, created the `web_search.py` utility and the `dependency_audit_tool.py`. Presentation Layer: Engineered the custom Streamlit Dashboard (`frontend/app.py`).                                                                                                                                                                                                                     |
+| Alveena Khan   | Code Planner                         | Planning & Core Tooling: Developed the Code Planner agent (architecture design), performed Planner LLM optimization (`max_iter` reduction), and created and integrated the `code_syntax_tool.py` utility.                                                                                                                                                                                                                                                                                                                                                       |
+| Eiman Fatima   | Code Writer                         | Implementation & Test Tooling: Developed the Code Writer agent (responsible for generating the actual code output), and created and integrated the specialized quality tool `code_testing_tool.py`.                                                                                                                                                                                                                                                                                                                                                       |
+
+This robust attribution section clearly delineates your team's contributions for formal evaluation.

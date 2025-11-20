@@ -1,6 +1,6 @@
-"""Global configuration for the Agentic AI workshop project."""
 from __future__ import annotations
 
+import logging
 import os
 from dataclasses import dataclass, field
 from typing import Dict, Any, TYPE_CHECKING
@@ -15,7 +15,10 @@ if TYPE_CHECKING:  # pragma: no cover - typing helpers only
 # Ensure environment variables from a local .env file are available during development.
 load_dotenv()
 
-MODEL_NAME = "meta-llama/llama-3.3-70b-instruct:free"
+# --- CRITICAL FIX: SWAPPING TO A FASTER MODEL ---
+# Using Mistral 7B is much faster and less resource-intensive, minimizing 429 errors
+# and speeding up the Planning Agent significantly.
+MODEL_NAME = "mistralai/mistral-7b-instruct"
 OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1"
 OPENROUTER_DEFAULT_HEADERS = {
     "HTTP-Referer": "https://github.com/your-org/agentic-workshop",
@@ -26,7 +29,7 @@ LLM_CONFIG: Dict[str, object] = {
     "model": MODEL_NAME,
     "openrouter_api_key": os.getenv("OPENROUTER_API_KEY", ""),
     "temperature": 0.2,
-    "max_tokens": 800,
+    "max_tokens": 4096,
 }
 
 
