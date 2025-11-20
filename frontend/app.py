@@ -1,25 +1,31 @@
 """Streamlit frontend for the Code Development Assistant multi-agent system."""
 
-import sys
-__import__('pysqlite3')
-sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
-
-import streamlit as st
-# ... rest of your imports
+# 1. Future imports MUST be first
 from __future__ import annotations
 
+# 2. System imports
 import sys
+import os
 from pathlib import Path
+
+# 3. SQLite Fix (Must be before importing streamlit or other heavy libraries)
+# This fixes the "sqlite3 version too old" error on Streamlit Cloud
+try:
+    __import__('pysqlite3')
+    sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
+except ImportError:
+    pass # Pass if running locally without pysqlite3 installed
+
+# 4. Application Imports
 import streamlit as st
 from dotenv import load_dotenv
 
-# Ensure we can import the backend modules when launching from the frontend directory.
+# 5. Add project root to path
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.append(str(PROJECT_ROOT))
 
-# We use the run_pipeline function from main, which is now aliased to 
-# run_code_development_pipeline in crew.py.
+# 6. Import Backend
 from main import run_pipeline 
 
 load_dotenv()
@@ -39,7 +45,7 @@ st.set_page_config(
 header_col1, header_col2 = st.columns([1, 4])
 
 with header_col1:
-    st.image("https://upload.wikimedia.org/wikipedia/commons/4/4b/Code_symbol.svg", width=100) # Placeholder image: Code icon
+    st.image("https://upload.wikimedia.org/wikipedia/commons/4/4b/Code_symbol.svg", width=100) 
 with header_col2:
     st.title("Code Development Assistant 🚀")
     st.subheader("Multi-Agent System for Automated Planning, Writing, Testing, and Review.")
@@ -98,13 +104,6 @@ if run_button:
     
     with tab_workflow:
         st.info("Starting the Code Development pipeline. Observe the step-by-step progress below.")
-        
-        # Simulate structured output extraction for the live analysis tab
-        
-        # NOTE: Since the current run_pipeline function only returns the final aggregated 
-        # result string, we will display that result and then simulate the process structure. 
-        # For a truly unique demo, you would modify your CrewAI executor to return a 
-        # structured JSON object containing task outputs (Plan, Code, Test, Review).
         
         st.markdown("## Multi-Agent Workflow Execution Status")
         st.progress(0, text="Initializing Code Planner...")
