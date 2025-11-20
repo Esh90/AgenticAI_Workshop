@@ -1,17 +1,13 @@
 """Streamlit frontend for the Code Development Assistant multi-agent system."""
 
-# 1. Future imports MUST be first
-from __future__ import annotations
-
-# 2. System imports
-"""Streamlit frontend for the Code Development Assistant multi-agent system."""
+# 1. Future imports MUST be first (and only appear once)
 from __future__ import annotations
 
 import sys
 import os
 
 # --- SQLITE FIX START ---
-# This must happen before importing streamlit or any library that uses sqlite
+# This must happen before importing streamlit or any library that uses sqlite (like crewai/chromadb)
 __import__('pysqlite3')
 sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
 # --- SQLITE FIX END ---
@@ -20,19 +16,18 @@ import streamlit as st
 from pathlib import Path
 from dotenv import load_dotenv
 
-# 5. Add project root to path
+# 5. Add project root to path so we can import 'main'
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.append(str(PROJECT_ROOT))
 
 # 6. Import Backend
+# Note: The SQLite fix above ensures this import doesn't crash if it uses ChromaDB
 from main import run_pipeline 
 
 load_dotenv()
 
 # --- STREAMLIT CONFIGURATION ---
-
-# Setting a professional, tech-focused page configuration
 st.set_page_config(
     page_title="Code Development Assistant | Multi-Agent AI", 
     page_icon="🤖", 
@@ -40,8 +35,6 @@ st.set_page_config(
 )
 
 # --- HEADER AND PROJECT OVERVIEW ---
-
-# Use columns for a visually balanced header
 header_col1, header_col2 = st.columns([1, 4])
 
 with header_col1:
@@ -67,7 +60,6 @@ st.markdown("""
 
 
 # --- SIDEBAR CONFIGURATION ---
-
 default_topic = "Develop a secure Python function to sanitize user input for SQL injection."
 
 with st.sidebar:
@@ -93,7 +85,6 @@ with st.sidebar:
     """)
 
 # --- MAIN CONTENT TABS ---
-
 tab_result, tab_workflow, tab_context = st.tabs([
     "Final Deliverable & Review Report 📋", 
     "Live Output Analysis 📊", 
@@ -101,7 +92,6 @@ tab_result, tab_workflow, tab_context = st.tabs([
 ])
 
 if run_button:
-    
     with tab_workflow:
         st.info("Starting the Code Development pipeline. Observe the step-by-step progress below.")
         
@@ -173,7 +163,6 @@ if run_button:
             "Value Proposition": ["Ensures syntactic correctness.", "Ensures high test coverage.", "Ensures production security and compliance."]
         })
         
-
 st.markdown("---")
 st.caption(
     "Demonstrating Multi-Agent Orchestration (CrewAI) and Context Augmentation (RAG) for robust software development workflows."
