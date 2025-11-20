@@ -5,7 +5,7 @@ A hands-on project template that demonstrates how to orchestrate specialized Cre
 The stack combines CrewAI with specialized LangChain tools, a FAISS-backed Retrieval-Augmented Generation (RAG) pipeline, and a Streamlit frontend. All large language model calls are routed through the OpenRouter API using the stable and fast model: `mistralai/mistral-7b-instruct`.
 
 ---
-
+## Streamlit App: https://agenticaiworkshopgit-8xcsygxprrgmaftuzafrbx.streamlit.app/
 ## 1. Project Goals and Architecture
 
 The primary goal of this project is to showcase a robust, fully automated, and self-correcting software development cycle using collaborative AI agents.
