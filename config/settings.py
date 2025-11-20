@@ -15,9 +15,7 @@ if TYPE_CHECKING:  # pragma: no cover - typing helpers only
 # Ensure environment variables from a local .env file are available during development.
 load_dotenv()
 
-# --- CRITICAL FIX: SWAPPING TO A FASTER MODEL ---
-# Using Mistral 7B is much faster and less resource-intensive, minimizing 429 errors
-# and speeding up the Planning Agent significantly.
+# Constants
 MODEL_NAME = "mistralai/mistral-7b-instruct"
 OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1"
 OPENROUTER_DEFAULT_HEADERS = {
@@ -25,20 +23,8 @@ OPENROUTER_DEFAULT_HEADERS = {
     "X-Title": "Agentic AI Workshop",
 }
 
-@dataclass
-class OpenRouterLLMConfig:
-    """Helper container to build consistently configured OpenRouter clients."""
-    
-    model: str = MODEL_NAME
-    # CHANGE THIS LINE:
-    api_key: str = field(default_factory=lambda: os.getenv("OPENROUTER_API_KEY", ""))
-    temperature: float = 0.2
-    max_tokens: int = 4096
-
-
 def _split_env_list(env_var: str) -> list[str]:
     """Return a sanitized list from a comma-separated environment variable."""
-
     raw_value = os.getenv(env_var, "")
     if not raw_value:
         return []
@@ -49,10 +35,13 @@ def _split_env_list(env_var: str) -> list[str]:
 class OpenRouterLLMConfig:
     """Helper container to build consistently configured OpenRouter clients."""
 
-    model: str = str(LLM_CONFIG["model"])
-    api_key: str = str(LLM_CONFIG["openrouter_api_key"])
-    temperature: float = float(LLM_CONFIG["temperature"])
-    max_tokens: int = int(LLM_CONFIG["max_tokens"])
+    # --- FIX IS HERE: Defined defaults directly instead of referring to LLM_CONFIG ---
+    model: str = MODEL_NAME
+    # This lambda function ensures we grab the API key at RUNTIME, 
+    # giving app.py enough time to inject it from Streamlit Secrets.
+    api_key: str = field(default_factory=lambda: os.getenv("OPENROUTER_API_KEY", ""))
+    temperature: float = 0.2
+    max_tokens: int = 4096
     base_url: str = OPENROUTER_BASE_URL
     headers: Dict[str, str] = field(default_factory=lambda: dict(OPENROUTER_DEFAULT_HEADERS))
     fallback_base_urls: list[str] = field(
@@ -70,7 +59,7 @@ def get_openrouter_client() -> "OpenAI":
     config = OpenRouterLLMConfig()
     if not config.api_key:
         raise ValueError(
-            "OPENROUTER_API_KEY is missing. Set it in your environment or .env file."
+            "OPENROUTER_API_KEY is missing. Set it in your environment or Streamlit Secrets."
         )
     return OpenAI(
         base_url=config.base_url,
@@ -85,7 +74,7 @@ def build_openrouter_chat_llm(**overrides: Any) -> ChatOpenAI:
     config = OpenRouterLLMConfig()
     if not config.api_key:
         raise ValueError(
-            "OPENROUTER_API_KEY is missing. Set it in your environment or .env file."
+            "OPENROUTER_API_KEY is missing. Set it in your environment or Streamlit Secrets."
         )
 
     return ChatOpenAI(
@@ -104,7 +93,7 @@ def build_crewai_llm(**overrides: Any) -> LLM:
     config = OpenRouterLLMConfig()
     if not config.api_key:
         raise ValueError(
-            "OPENROUTER_API_KEY is missing. Set it in your environment or .env file."
+            "OPENROUTER_API_KEY is missing. Set it in your environment or Streamlit Secrets."
         )
 
     raw_model = overrides.get("model", config.model)
