@@ -1,0 +1,21 @@
+SECURITY AND TESTING BEST PRACTICES FOR PYTHON
+
+SQL Injection Prevention Guidelines
+
+Always use Parameterized Queries / Prepared Statements. This is the primary defense against SQL injection. Never concatenate user input directly into a query string.
+
+Input Validation. Validate user input to ensure it matches the expected type and format (e.g., only digits for an ID). Use allow-lists instead of block-lists.
+
+Principle of Least Privilege. Ensure the database account used by the application has only the minimum necessary permissions.
+
+Avoid relying solely on input sanitization functions. While sanitization is useful for display and general cleaning, it is secondary to parameterization for database interaction.
+
+Python Security Coding Standards
+
+Use standard library functions (json.loads, re) carefully. For sanitizing HTML, use libraries like Bleach.
+
+Error Handling: Never expose raw database errors or stack traces to the user. Log them internally only.
+
+Unit Testing for Security
+
+Security tests must include unit tests for input functions to verify that known malicious input strings (' OR '1'='1) are correctly neutralized, escaped, or rejected by the sanitization function. Test boundary conditions (empty string, very long strings, Unicode).

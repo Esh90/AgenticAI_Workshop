@@ -1,11 +1,11 @@
-"""DuckDuckGo-powered open web search tool."""
 from __future__ import annotations
 
 import logging
 from typing import Any
 
 from crewai.tools import BaseTool
-from duckduckgo_search import DDGS
+# FIX 1: Change import from deprecated 'duckduckgo_search' to stable 'ddgs'
+from ddgs import DDGS 
 from pydantic import Field
 
 
@@ -58,11 +58,15 @@ class DuckDuckGoSearchTool(BaseTool):
                 else:
                     iterator = ddgs.text(query, max_results=self.max_results)
                 return list(iterator)
-        except Exception as exc:  # pragma: no cover - network variability
+        except Exception as exc:
             self._logger.exception("DuckDuckGo search failed for '%s'", query)
             raise ValueError(f"DuckDuckGo search failed: {exc}") from exc
 
 
-def create_web_search_tool() -> DuckDuckGoSearchTool:
-    """Create a tool that performs top-k DuckDuckGo searches."""
-    return DuckDuckGoSearchTool(max_results=5)
+def create_web_search_tool(max_results: int = 5) -> DuckDuckGoSearchTool:
+    """
+    Create a tool that performs top-k DuckDuckGo searches.
+    
+    The max_results parameter is now optional and correctly passed to the tool class.
+    """
+    return DuckDuckGoSearchTool(max_results=max_results)
