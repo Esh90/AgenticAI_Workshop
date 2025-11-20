@@ -25,12 +25,15 @@ OPENROUTER_DEFAULT_HEADERS = {
     "X-Title": "Agentic AI Workshop",
 }
 
-LLM_CONFIG: Dict[str, object] = {
-    "model": MODEL_NAME,
-    "openrouter_api_key": os.getenv("OPENROUTER_API_KEY", ""),
-    "temperature": 0.2,
-    "max_tokens": 4096,
-}
+@dataclass
+class OpenRouterLLMConfig:
+    """Helper container to build consistently configured OpenRouter clients."""
+    
+    model: str = MODEL_NAME
+    # CHANGE THIS LINE:
+    api_key: str = field(default_factory=lambda: os.getenv("OPENROUTER_API_KEY", ""))
+    temperature: float = 0.2
+    max_tokens: int = 4096
 
 
 def _split_env_list(env_var: str) -> list[str]:

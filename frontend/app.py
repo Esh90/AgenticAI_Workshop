@@ -1,30 +1,33 @@
 """Streamlit frontend for the Code Development Assistant multi-agent system."""
-
-# 1. Future imports MUST be first (and only appear once)
 from __future__ import annotations
 
 import sys
 import os
+import streamlit as st # Import streamlit early
 
-# --- SQLITE FIX START ---
-# This must happen before importing streamlit or any library that uses sqlite (like crewai/chromadb)
+# --- 1. SECRETS INJECTION (CRITICAL FIX) ---
+# On Streamlit Cloud, secrets are in st.secrets, not os.environ.
+# We must manually inject them into os.environ BEFORE importing config/settings.py
+if "OPENROUTER_API_KEY" in st.secrets:
+    os.environ["OPENROUTER_API_KEY"] = st.secrets["OPENROUTER_API_KEY"]
+
+# --- 2. SQLITE FIX ---
+# This must happen before importing any library that uses sqlite
 __import__('pysqlite3')
 sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
-# --- SQLITE FIX END ---
 
-import streamlit as st
 from pathlib import Path
 from dotenv import load_dotenv
 
-# 5. Add project root to path so we can import 'main'
+# 3. Add project root to path
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.append(str(PROJECT_ROOT))
 
-# 6. Import Backend
-# Note: The SQLite fix above ensures this import doesn't crash if it uses ChromaDB
+# 4. Import Backend (Now safe because os.environ is set)
 from main import run_pipeline 
 
+# Load local .env if present (for local development)
 load_dotenv()
 
 # --- STREAMLIT CONFIGURATION ---
@@ -92,6 +95,7 @@ tab_result, tab_workflow, tab_context = st.tabs([
 ])
 
 if run_button:
+    
     with tab_workflow:
         st.info("Starting the Code Development pipeline. Observe the step-by-step progress below.")
         
