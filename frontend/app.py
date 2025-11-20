@@ -1,4 +1,11 @@
 """Streamlit frontend for the Code Development Assistant multi-agent system."""
+
+import sys
+__import__('pysqlite3')
+sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
+
+import streamlit as st
+# ... rest of your imports
 from __future__ import annotations
 
 import sys
