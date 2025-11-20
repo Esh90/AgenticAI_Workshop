@@ -4,20 +4,20 @@
 from __future__ import annotations
 
 # 2. System imports
+"""Streamlit frontend for the Code Development Assistant multi-agent system."""
+from __future__ import annotations
+
 import sys
 import os
-from pathlib import Path
 
-# 3. SQLite Fix (Must be before importing streamlit or other heavy libraries)
-# This fixes the "sqlite3 version too old" error on Streamlit Cloud
-try:
-    __import__('pysqlite3')
-    sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
-except ImportError:
-    pass # Pass if running locally without pysqlite3 installed
+# --- SQLITE FIX START ---
+# This must happen before importing streamlit or any library that uses sqlite
+__import__('pysqlite3')
+sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
+# --- SQLITE FIX END ---
 
-# 4. Application Imports
 import streamlit as st
+from pathlib import Path
 from dotenv import load_dotenv
 
 # 5. Add project root to path
